@@ -5,6 +5,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'node:path';
 import { DatabaseModule } from './database/database.module';
 import {ConfigModule} from "@nestjs/config";
+import { ConfirmEmailService } from './emails/confirm-email/confirm-email.service';
 
 @Module({
   imports: [
@@ -18,6 +19,6 @@ import {ConfigModule} from "@nestjs/config";
       ConfigModule.forRoot({isGlobal:true})
   ],
   controllers: [],
-  providers: [],
+  providers: [ConfirmEmailService],
 })
 export class AppModule {}
