@@ -1,0 +1,17 @@
+graph TD
+    User[User] -->|Login/Request| API[GraphQL API -Authentication & Authorization]
+    API -->|Validate Token| Auth[Token Validator]
+    API -->|Query| CacheManager[Cache Management -Redis]
+    CacheManager -->|Cache Hit| ReturnCache[Return Cached Data]
+    CacheManager -->|Cache Miss| AmazonAPI[Amazon API Integration]
+    AmazonAPI -->|Fetch Data| ExternalAPI[Amazon API]
+    ExternalAPI --> AmazonAPI
+    AmazonAPI -->|Return Data| CacheManager
+    CacheManager -->|Update Cache| Redis[Redis Cache]
+    CacheManager -->|Publish Event| Broker[Message Broker]
+    Broker --> PriceWorker[Price Change Worker]
+    PriceWorker -->|Process Events| NotifyManager[Notification Manager]
+    NotifyManager -->|Trigger Notifications| NotificationChannels[Notification Channels]
+    NotificationChannels -->|Email/SMS/Push| User
+    CacheManager -->|Return Data| API
+    API -->|Return Data| User
