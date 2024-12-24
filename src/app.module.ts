@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { DatabaseModule } from './database/database.module';
 import { ConfigModule } from '@nestjs/config';
 import { ConfirmEmailService } from './emails/confirm-email.service';
+import { RedisService } from './redis/redis.service';
 
 @Module({
   imports: [
@@ -20,6 +21,6 @@ import { ConfirmEmailService } from './emails/confirm-email.service';
     ConfigModule.forRoot({ isGlobal: true }),
   ],
   controllers: [],
-  providers: [ConfirmEmailService],
+  providers: [ConfirmEmailService, RedisService],
 })
 export class AppModule {}
