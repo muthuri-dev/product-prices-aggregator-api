@@ -4,8 +4,8 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'node:path';
 import { DatabaseModule } from './database/database.module';
-import {ConfigModule} from "@nestjs/config";
-import { ConfirmEmailService } from './emails/confirm-email/confirm-email.service';
+import { ConfigModule } from '@nestjs/config';
+import { ConfirmEmailService } from './emails/confirm-email.service';
 
 @Module({
   imports: [
@@ -13,10 +13,11 @@ import { ConfirmEmailService } from './emails/confirm-email/confirm-email.servic
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'schema.gql'),
       sortSchema: true,
+      context: ({ req }) => ({ req }),
     }),
     AuthModule,
     DatabaseModule,
-      ConfigModule.forRoot({isGlobal:true})
+    ConfigModule.forRoot({ isGlobal: true }),
   ],
   controllers: [],
   providers: [ConfirmEmailService],

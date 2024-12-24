@@ -1,9 +1,15 @@
-import { Injectable, Logger, NotAcceptableException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotAcceptableException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserInput } from '../dto/create-user.input';
 import * as bcrypt from 'bcrypt';
+import { LoginUserInput } from '../dto/login-user.input';
 
 @Injectable()
 export class UserCustomRepository {
@@ -41,8 +47,48 @@ export class UserCustomRepository {
     return await this.usersRepository.save(newUser);
   }
 
-  async update(user: User, refreshToken: string): Promise<User> {
+  async updateUserRT(user: User, refreshToken: string): Promise<User> {
     user.refreshToken = refreshToken;
     return await this.usersRepository.save(user);
+  }
+
+  async updateUserACNT(user: User, activationToken: string): Promise<User> {
+    user.activationToken = activationToken;
+    return await this.usersRepository.save(user);
+  }
+
+  async findActivationToken(activationToken: string) {
+    const user = await this.usersRepository.findOne({
+      where: { activationToken },
+    });
+
+    if (!user)
+      throw new NotAcceptableException(
+        'Check your mail for correct email to Verify ',
+      );
+
+    return user;
+  }
+
+  async login(inputArgs: LoginUserInput) {
+    const user = await this.findUserByEmail(inputArgs.email);
+
+    if (!user) throw new ForbiddenException('User not found, Register!!');
+
+    if (user.activationToken)
+      throw new ForbiddenException('Please confirm your email');
+
+    //confirming password
+    const isPasswordMatch: boolean = await bcrypt.compare(
+      inputArgs.password,
+      user.password,
+    );
+    if (!isPasswordMatch) throw new ForbiddenException('Incorrect password');
+
+    return user;
+  }
+
+  async getAll(): Promise<User[]> {
+    return await this.usersRepository.find();
   }
 }

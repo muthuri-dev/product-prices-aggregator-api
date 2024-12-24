@@ -5,6 +5,7 @@ import { ConfirmEmailService } from '../emails/confirm-email.service';
 import { JwtService } from '@nestjs/jwt';
 import { User } from './entities/user.entity';
 import { CreateUserInput } from './dto/create-user.input';
+import { LoginUserInput } from './dto/login-user.input';
 import { LoginSuccess } from './entities/login-success.entity';
 
 @Injectable()
@@ -38,14 +39,23 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  async confirmEmailToken() {}
+  async confirmEmailToken(activationToken: string) {
+    const user =
+      await this.userCustomRepository.findActivationToken(activationToken);
 
-  async register(inputArgs: CreateUserInput): Promise<LoginSuccess> {
+    await this.userCustomRepository.updateUserACNT(user, null);
+
+    return {
+      message: 'Email confirmed successfully',
+    };
+  }
+
+  async register(inputArgs: CreateUserInput) {
     const user = await this.userCustomRepository.create(inputArgs);
 
-    const { accessToken, refreshToken } = await this.generateTokens(user);
+    const { accessToken } = await this.generateTokens(user);
 
-    const [confirmationToken, part2] = accessToken.split('.', 2);
+    const [part1, confirmationToken] = accessToken.split('.', 2);
 
     await this.emailService.sendConfirmationEmail(
       user.email,
@@ -53,11 +63,31 @@ export class AuthService {
       user.username,
     );
 
+    await this.userCustomRepository.updateUserACNT(user, confirmationToken);
+
     return {
-      accessToken,
-      refreshToken,
       message:
         'Registration successful. Please check your email to confirm your account',
     };
+  }
+
+  async login(inputArgs: LoginUserInput): Promise<LoginSuccess> {
+    const user = await this.userCustomRepository.login(inputArgs);
+
+    const { accessToken, refreshToken } = await this.generateTokens(user);
+
+    await this.userCustomRepository.updateUserRT(user, refreshToken);
+
+    return { accessToken, refreshToken, message: 'Login successful' };
+  }
+
+  async logout(user: User) {
+    await this.userCustomRepository.updateUserRT(user, null);
+
+    return { message: 'Logout successful' };
+  }
+
+  async getUsers(): Promise<User[]> {
+    return await this.userCustomRepository.getAll();
   }
 }
