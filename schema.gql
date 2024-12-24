@@ -25,14 +25,18 @@ input LoginUserInput {
 }
 
 type Mutation {
-  confirmEmailToken(activationToken: String!): User!
+  confirmEmailToken(activationToken: String!): Success!
   login(loginArgs: LoginUserInput!): LoginSuccess!
-  logout: User!
-  registerUser(createArgs: CreateUserInput!): User!
+  logout: Success!
+  registerUser(createArgs: CreateUserInput!): Success!
 }
 
 type Query {
   getAllUsers: [User!]!
+}
+
+type Success {
+  message: String!
 }
 
 type User {
@@ -40,7 +44,6 @@ type User {
   activationToken: String
   createdAt: DateTime!
   email: String!
-  isEmailConfirmed: Boolean!
   refreshToken: String
   updatedAt: DateTime!
   username: String!

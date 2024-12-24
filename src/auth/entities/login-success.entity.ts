@@ -11,3 +11,9 @@ export class LoginSuccess {
   @Field()
   message: string;
 }
+
+@ObjectType()
+export class Success {
+  @Field()
+  message: string;
+}

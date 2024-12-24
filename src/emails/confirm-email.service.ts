@@ -8,12 +8,12 @@ export class ConfirmEmailService {
 
   constructor(private readonly configService: ConfigService) {
     this.transporter = nodemailer.createTransport({
-      host: 'smtppro.zoho.com',
+      host: 'smtp.zoho.com',
       port: 587,
       secure: false,
       auth: {
-        user: this.configService.getOrThrow('SENDER_SUPPORT_EMAIL'),
-        pass: this.configService.getOrThrow('SENDER_EMAIL_PASSWORD'),
+        user: this.configService.getOrThrow<string>('SENDER_SUPPORT_EMAIL'),
+        pass: this.configService.getOrThrow<string>('SENDER_EMAIL_PASSWORD'),
       },
     });
   }
@@ -24,7 +24,7 @@ export class ConfirmEmailService {
     username: string,
   ) {
     const mailOptions = {
-      from: process.env.SENDER_SUPPORT_EMAIL,
+      from: this.configService.getOrThrow<string>('SENDER_SUPPORT_EMAIL'),
       to: email,
       subject:
         ' Welcome to price Aggregator - Please Verify Your Email Address to use our API',
@@ -63,6 +63,11 @@ export class ConfirmEmailService {
         }
         .content h1 {
             font-size: 24px;
+            color: #e74c3c;
+            margin-bottom: 10px;
+        }
+         .content h2 {
+            font-size: 20px;
             color: #e74c3c;
             margin-bottom: 10px;
         }
@@ -107,7 +112,10 @@ export class ConfirmEmailService {
         <div class="button-container">
             <a href="${confirmation_token}">Confirm Your Email</a>
         </div>
-        <p>Or copy this token if you are using API playground</p>
+        <div class="content">
+        <h2>Or copy this token if you are using API playground </h2>
+        <br><code>${confirmation_token}</code>
+        </div>
         <div class="content">
             <p>If you did not sign up for price Aggregator, please ignore this email or contact our support team.</p>
             <p>Thank you,<br>The Price Aggregator Team</p>

@@ -2,7 +2,7 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { AuthService } from './auth.service';
 import { User } from './entities/user.entity';
 import { CreateUserInput } from './dto/create-user.input';
-import { LoginSuccess } from './entities/login-success.entity';
+import { LoginSuccess, Success } from './entities/login-success.entity';
 import { LoginUserInput } from './dto/login-user.input';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { UseGuards } from '@nestjs/common';
@@ -12,7 +12,7 @@ import { GqlAuthGuard } from './security/guards/gql-auth.guard';
 export class AuthResolver {
   constructor(private readonly authService: AuthService) {}
 
-  @Mutation(() => User)
+  @Mutation(() => Success)
   async registerUser(@Args('createArgs') createArgs: CreateUserInput) {
     return await this.authService.register(createArgs);
   }
@@ -22,13 +22,13 @@ export class AuthResolver {
     return await this.authService.login(loginArgs);
   }
 
-  @Mutation(() => User)
+  @Mutation(() => Success)
   async confirmEmailToken(@Args('activationToken') activationToken: string) {
     return await this.authService.confirmEmailToken(activationToken);
   }
 
   @UseGuards(GqlAuthGuard)
-  @Mutation(() => User)
+  @Mutation(() => Success)
   async logout(@CurrentUser() user: User) {
     return await this.authService.logout(user);
   }
