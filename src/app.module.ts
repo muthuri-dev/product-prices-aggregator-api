@@ -6,6 +6,12 @@ import { join } from 'node:path';
 import { DatabaseModule } from './database/database.module';
 import { ConfigModule } from '@nestjs/config';
 import { ConfirmEmailService } from './emails/confirm-email.service';
+import { RedisService } from './redis/redis.service';
+import { ProductModule } from './product/product.module';
+import { SearchService } from './search/search.service';
+import { RedisModule } from './redis/redis.module';
+import { AmazonModule } from './amazon/amazon.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -18,8 +24,12 @@ import { ConfirmEmailService } from './emails/confirm-email.service';
     AuthModule,
     DatabaseModule,
     ConfigModule.forRoot({ isGlobal: true }),
+    ProductModule,
+    RedisModule,
+    AmazonModule,
+    NotificationsModule,
   ],
   controllers: [],
-  providers: [ConfirmEmailService],
+  providers: [ConfirmEmailService, RedisService, SearchService],
 })
 export class AppModule {}

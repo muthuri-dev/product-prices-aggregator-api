@@ -31,8 +31,18 @@ type Mutation {
   registerUser(createArgs: CreateUserInput!): Success!
 }
 
+type Product {
+  categories: [String!]!
+  image_url: String!
+  price: Float!
+  title: String!
+  url: String!
+}
+
 type Query {
+  fetchProducts(domain: String!, keywords: String!, pagesToSearch: Float!): [Product!]!
   getAllUsers: [User!]!
+  searchProducts(title: String!): [Product!]!
 }
 
 type Success {
