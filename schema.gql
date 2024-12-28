@@ -32,23 +32,17 @@ type Mutation {
 }
 
 type Product {
-  asin: String!
-  availability: String!
-  brand: String
-  categories: [String!]
-  delivery: [String!]
-  description: String
-  discount: Float
-  features: [String!]
-  images: [String!]
-  price: Float
-  rating: Float
+  categories: [String!]!
+  image_url: String!
+  price: Float!
   title: String!
+  url: String!
 }
 
 type Query {
+  fetchProducts(domain: String!, keywords: String!, pagesToSearch: Float!): [Product!]!
   getAllUsers: [User!]!
-  searchProductsByTitle(title: String!): [Product!]!
+  searchProducts(title: String!): [Product!]!
 }
 
 type Success {

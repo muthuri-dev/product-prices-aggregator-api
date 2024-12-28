@@ -16,32 +16,28 @@ export class SearchService {
     });
   }
 
-  async indexProduct(index: string, product: any): Promise<void> {
+  async indexProduct(product: any) {
     await this.client.index({
-      index,
-      id: product.asin,
+      index: 'products',
       body: {
         title: product.title,
-        price: product.price,
-        availability: product.availability,
+        price: product.final_price,
         categories: product.categories,
-        rating: product.rating,
+        image_url: product.image_url,
+        url: product.url,
       },
     });
-    console.log(`Product indexed: ${product.title}`);
   }
 
-  async searchProductsByTitle(index: string, title: string): Promise<any> {
-    const result = await this.client.search({
-      index,
+  async searchByTitle(title: string) {
+    const { body } = await this.client.search({
+      index: 'products',
       body: {
         query: {
-          match: {
-            title: title,
-          },
+          match: { title },
         },
       },
     });
-    return result.body.hits.hits.map((hit) => hit._source);
+    return body.hits.hits.map((hit) => hit._source);
   }
 }

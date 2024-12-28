@@ -3,11 +3,14 @@ import { ProductService } from './product.service';
 import { ProductResolver } from './product.resolver';
 import { SearchService } from '../search/search.service';
 import { RedisModule } from '../redis/redis.module';
-import { RedisService } from '../redis/redis.service';
+import { NotificationsModule } from '../notifications/notifications.module';
+import { AmazonService } from '../amazon/amazon.service';
+import { HttpModule } from '@nestjs/axios';
+import { AmazonModule } from '../amazon/amazon.module';
 
 @Module({
-  imports: [RedisModule],
-  providers: [ProductResolver, ProductService, SearchService, RedisService],
+  imports: [RedisModule, NotificationsModule, HttpModule, AmazonModule],
+  providers: [ProductResolver, ProductService, SearchService, AmazonService],
   exports: [ProductService],
 })
 export class ProductModule {}

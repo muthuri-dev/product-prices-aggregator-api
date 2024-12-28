@@ -9,40 +9,95 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   constructor(private readonly configService: ConfigService) {}
 
   async onModuleInit() {
-    this.client = createClient({
-      url: this.configService.getOrThrow<string>('REDIS_URL'),
-    });
+    try {
+      this.client = createClient({
+        url: this.configService.getOrThrow<string>('REDIS_URL'),
+      });
 
-    this.client.on('error', (err) => {
-      console.error('Redis Error:', err);
-    });
+      this.client.on('error', (err) => {
+        console.error('Redis Error:', err);
+      });
 
-    await this.client.connect();
-    console.log('Connected to Redis');
+      await this.client.connect();
+      console.log('Connected to Redis');
+    } catch (error) {
+      console.error('Failed to connect to Redis:', error.message);
+      throw error;
+    }
   }
 
   async onModuleDestroy() {
-    await this.client.quit();
+    try {
+      if (this.client) {
+        await this.client.quit();
+        console.log('Disconnected from Redis');
+      }
+    } catch (error) {
+      console.error('Error while disconnecting from Redis:', error.message);
+    }
   }
 
   async get(key: string): Promise<string | null> {
-    return await this.client.get(key);
+    try {
+      return await this.client.get(key);
+    } catch (error) {
+      console.error(`Error getting key "${key}" from Redis:`, error.message);
+      return null;
+    }
   }
 
   async set(key: string, value: string, ttl?: number): Promise<void> {
-    if (ttl) {
-      await this.client.set(key, value, { EX: ttl });
-    } else {
-      await this.client.set(key, value);
+    try {
+      if (ttl) {
+        await this.client.set(key, value, { EX: ttl });
+      } else {
+        await this.client.set(key, value);
+      }
+    } catch (error) {
+      console.error(`Error setting key "${key}" in Redis:`, error.message);
     }
   }
 
   async del(key: string): Promise<void> {
-    await this.client.del(key);
+    try {
+      await this.client.del(key);
+    } catch (error) {
+      console.error(`Error deleting key "${key}" in Redis:`, error.message);
+    }
   }
 
   async exists(key: string): Promise<boolean> {
-    const exists = await this.client.exists(key);
-    return exists > 0;
+    try {
+      const exists = await this.client.exists(key);
+      return exists > 0;
+    } catch (error) {
+      console.error(
+        `Error checking existence of key "${key}" in Redis:`,
+        error.message,
+      );
+      return false;
+    }
+  }
+
+  async setJSON(key: string, value: any, ttl?: number): Promise<void> {
+    try {
+      const jsonString = JSON.stringify(value);
+      await this.set(key, jsonString, ttl);
+    } catch (error) {
+      console.error(`Error setting JSON key "${key}" in Redis:`, error.message);
+    }
+  }
+
+  async getJSON<T>(key: string): Promise<T | null> {
+    try {
+      const value = await this.get(key);
+      return value ? JSON.parse(value) : null;
+    } catch (error) {
+      console.error(
+        `Error getting JSON key "${key}" from Redis:`,
+        error.message,
+      );
+      return null;
+    }
   }
 }

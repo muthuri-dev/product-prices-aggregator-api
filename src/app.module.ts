@@ -10,6 +10,8 @@ import { RedisService } from './redis/redis.service';
 import { ProductModule } from './product/product.module';
 import { SearchService } from './search/search.service';
 import { RedisModule } from './redis/redis.module';
+import { AmazonModule } from './amazon/amazon.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { RedisModule } from './redis/redis.module';
     ConfigModule.forRoot({ isGlobal: true }),
     ProductModule,
     RedisModule,
+    AmazonModule,
+    NotificationsModule,
   ],
   controllers: [],
   providers: [ConfirmEmailService, RedisService, SearchService],
