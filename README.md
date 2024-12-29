@@ -1,73 +1,300 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Product Prices Aggregator API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This project is a GraphQL API designed for aggregating product prices, monitoring competitor prices, fetching product
+details from the Bright Data API, and managing user authentication. The system incorporates caching with Redis, indexing
+with OpenSearch, and notification services via Kafka.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## Features
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Fetch product data from Bright Data.
+- Cache results in Redis for faster subsequent access.
+- Index product data in OpenSearch for efficient search.
+- Provide GraphQL queries for searching products.
+- Notify users when price thresholds are met.
+- User authentication with JWT-based login and role-based access.
 
-## Installation
+---
 
-```bash
-$ npm install
+## Technologies
+
+- **NestJS**: Framework for building the application.
+- **Redis**: Caching mechanism.
+- **OpenSearch**: Indexing and searching product data.
+- **Bright Data API**: Fetch product data.
+- **Kafka**: Notification service.
+- **GraphQL**: API interface.
+- **JWT**: Authentication mechanism.
+
+---
+
+## Setup Instructions
+
+### Prerequisites
+
+- Node.js
+- Redis
+- OpenSearch
+- Kafka broker
+- Bright Data API credentials
+
+### Environment Variables
+
+Create a `.env` file in the root directory:
+
+```env
+AMAZON_API_URL=https://api.brightdata.com
+AMAZON_API_TOKEN=<your_bright_data_token>
+REDIS_URL=redis://localhost:6379
+OPEN_SEARCH_URL=https://your-opensearch-url
+OPEN_SEARCH_USERNAME=<your_opensearch_username>
+OPEN_SEARCH_PASSWORD=<your_opensearch_password>
+KAFKA_BROKER=<your_kafka_broker>
+JWT_SECRET=<your_jwt_secret>
+JWT_EXPIRES_IN=3600
 ```
 
-## Running the app
+### Installation
 
-```bash
-# development
-$ npm run start
+1. Clone the repository:
+   ```bash
+   git clone <repository_url>
+   cd product-prices-aggregator-api
+   ```
 
-# watch mode
-$ npm run start:dev
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-# production mode
-$ npm run start:prod
+3. Start Redis and OpenSearch services.
+
+4. Run the application:
+   ```bash
+   npm run start:dev
+   ```
+
+---
+
+## Project Structure
+
+```
+src/
+├── amazon
+│   ├── amazon.module.ts
+│   ├── amazon.service.ts
+├── auth
+│   ├── auth.module.ts
+│   ├── auth.service.ts
+│   ├── auth.resolver.ts
+│   ├── jwt.strategy.ts
+│   ├── gql-auth.guard.ts
+├── bright-data
+│   ├── bright-data.service.ts
+├── notifications
+│   ├── notifications.module.ts
+│   ├── notifications.service.ts
+├── product
+│   ├── product.module.ts
+│   ├── product.service.ts
+│   ├── product.resolver.ts
+├── redis
+│   ├── redis.module.ts
+│   ├── redis.service.ts
+├── search
+│   ├── search.module.ts
+│   ├── search.service.ts
+├── app.module.ts
 ```
 
-## Test
+---
 
-```bash
-# unit tests
-$ npm run test
+## API Endpoints
 
-# e2e tests
-$ npm run test:e2e
+### GraphQL Queries
 
-# test coverage
-$ npm run test:cov
+#### 1. Search Products by Title
+
+```graphql
+query {
+    searchProductsByTitle(title: "smart watch") {
+        title
+        price
+        url
+    }
+}
 ```
 
-## Support
+#### 2. Fetch Products by Keywords
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```graphql
+query {
+    fetchProductsByKeywords(keywords: "smart watch", pagesToSearch: 2) {
+        title
+        price
+        url
+    }
+}
+```
 
-## Stay in touch
+#### 3. Notify Price Drop
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```graphql
+mutation {
+    notifyPriceDrop(
+        product: {
+            title: "smart watch",
+            price: 199.99,
+            url: "https://www.amazon.com/smart-watch"
+        },
+        userId: "user123",
+        threshold: 200
+    )
+}
+```
+
+#### 4. Register User
+
+```graphql
+mutation {
+    registerUser(input: {
+        username: "testuser",
+        email: "testuser@example.com",
+        password: "securepassword"
+    }) {
+        id
+        username
+        email
+    }
+}
+```
+
+#### 5. Login User
+
+```graphql
+mutation {
+    loginUser(input: {
+        email: "testuser@example.com",
+        password: "securepassword"
+    }) {
+        accessToken
+    }
+}
+```
+
+---
+
+## Flow of Data
+
+### Description
+
+1. **Authentication**: User logs in or registers via the GraphQL API.
+2. **Client Query**: A user queries for product data via GraphQL.
+3. **Redis Check**: The system checks Redis for cached results.
+4. **OpenSearch Check**: If not in Redis, it checks OpenSearch.
+5. **Bright Data API**: If not in OpenSearch, it fetches data from Bright Data.
+6. **Cache and Index**: The fetched data is cached in Redis and indexed in OpenSearch.
+7. **Response**: The system returns the results to the client.
+
+### Mermaid Flowchart
+
+```mermaid
+flowchart TD
+    A[User Login/Register] --> B[GraphQL Query]
+    B --> C[Redis Check]
+    C -- Hit --> D[Return Cached Results]
+    C -- Miss --> E[OpenSearch Check]
+    E -- Hit --> D[Return Indexed Results]
+    E -- Miss --> F[Fetch from Bright Data]
+    F --> G[Cache in Redis]
+    F --> H[Index in OpenSearch]
+    G --> I[Return Fetched Results]
+    H --> I
+```
+
+---
+
+## Key Services
+
+### **AuthService**
+
+Handles user authentication and authorization.
+
+#### Methods:
+
+- `registerUser(input: CreateUserInput): Promise<User>`
+- `loginUser(input: LoginUserInput): Promise<{ accessToken: string }>`
+
+### **AmazonService**
+
+Handles interactions with the Bright Data API.
+
+#### Methods:
+
+- `fetchProducts(keywords: string, domain: string, pagesToSearch: number): Promise<any[]>`
+- `getCachedProducts(keywords: string): Promise<any[]>`
+- `cacheProducts(keywords: string, products: any[]): Promise<void>`
+
+### **SearchService**
+
+Manages OpenSearch interactions.
+
+#### Methods:
+
+- `searchByTitle(title: string): Promise<any[]>`
+- `indexProduct(product: any): Promise<void>`
+
+### **NotificationsService**
+
+Handles user notifications via Kafka.
+
+#### Methods:
+
+- `sendNotification(type: string, payload: any): Promise<void>`
+
+### **BrightDataService**
+
+Handles Bright Data API interactions.
+
+#### Methods:
+
+- `triggerDataCollection(inputs: any[]): Promise<string>`
+- `fetchData(snapshotId: string): Promise<any[]>`
+
+---
+
+## Deployment
+
+### Docker Image
+
+The application is published as a Docker image and can be pulled using the following command:
+
+```bash
+docker pull ghcr.io/muthuri-dev/product-price-aggregator-api:0.1
+```
+
+---
+
+## Future Enhancements
+
+- Integrate real-time data updates using WebSockets.
+- Add user role management for fine-grained access control.
+- Enhance notification system for real-time updates.
+
+---
 
 ## License
 
-Nest is [MIT licensed](LICENSE).
+This project is licensed under the MIT License.
+
+---
+
+## Contributing
+
+Contributions are welcome! Please fork the repository and submit a pull request.
+
+---
+
+For any questions, feel free to contact.
+
