@@ -40,9 +40,9 @@ type Product {
 }
 
 type Query {
-  fetchProducts(domain: String!, keywords: String!, pagesToSearch: Float!): [Product!]!
+  fetchProductsByKeywords(domain: String! = "https://www.amazon.com", keywords: String!, pagesToSearch: Float! = 1): [Product!]!
   getAllUsers: [User!]!
-  searchProducts(title: String!): [Product!]!
+  searchProductsByTitle(title: String!): [Product!]!
 }
 
 type Success {

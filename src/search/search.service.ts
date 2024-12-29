@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class SearchService {
   private readonly client: Client;
+  private readonly indexName = 'products';
 
   constructor(private readonly configService: ConfigService) {
     this.client = new Client({
@@ -16,28 +17,44 @@ export class SearchService {
     });
   }
 
-  async indexProduct(product: any) {
+  async indexProduct(product: any): Promise<void> {
+    await this.ensureIndexExists();
     await this.client.index({
-      index: 'products',
-      body: {
-        title: product.title,
-        price: product.final_price,
-        categories: product.categories,
-        image_url: product.image_url,
-        url: product.url,
-      },
+      index: this.indexName,
+      body: product,
     });
   }
 
-  async searchByTitle(title: string) {
+  async ensureIndexExists(): Promise<void> {
+    const exists = await this.client.indices.exists({ index: this.indexName });
+    if (!exists.body) {
+      await this.client.indices.create({
+        index: this.indexName,
+        body: {
+          mappings: {
+            properties: {
+              title: { type: 'text' },
+              price: { type: 'float' },
+              categories: { type: 'keyword' },
+              image_url: { type: 'text' },
+              url: { type: 'text' },
+            },
+          },
+        },
+      });
+    }
+  }
+
+  async searchByTitle(title: string): Promise<any[]> {
     const { body } = await this.client.search({
-      index: 'products',
+      index: this.indexName,
       body: {
         query: {
           match: { title },
         },
       },
     });
+
     return body.hits.hits.map((hit) => hit._source);
   }
 }

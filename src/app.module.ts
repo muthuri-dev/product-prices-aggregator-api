@@ -8,10 +8,11 @@ import { ConfigModule } from '@nestjs/config';
 import { ConfirmEmailService } from './emails/confirm-email.service';
 import { RedisService } from './redis/redis.service';
 import { ProductModule } from './product/product.module';
-import { SearchService } from './search/search.service';
 import { RedisModule } from './redis/redis.module';
 import { AmazonModule } from './amazon/amazon.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { SearchModule } from './search/search.module';
+import { BrightDataModule } from './bright-data/bright-data.module';
 
 @Module({
   imports: [
@@ -28,8 +29,10 @@ import { NotificationsModule } from './notifications/notifications.module';
     RedisModule,
     AmazonModule,
     NotificationsModule,
+    SearchModule,
+    BrightDataModule,
   ],
   controllers: [],
-  providers: [ConfirmEmailService, RedisService, SearchService],
+  providers: [ConfirmEmailService, RedisService],
 })
 export class AppModule {}

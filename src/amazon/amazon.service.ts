@@ -1,21 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { HttpService } from '@nestjs/axios';
 import { SearchService } from '../search/search.service';
-import { firstValueFrom } from 'rxjs';
 import { RedisService } from '../redis/redis.service';
+import { BrightDataService } from '../bright-data/bright-data.service';
 
 @Injectable()
 export class AmazonService {
-  private readonly apiUrl = this.configService.get<string>('AMAZON_API_URL');
+  private readonly apiUrl =
+    this.configService.getOrThrow<string>('AMAZON_API_URL');
   private readonly apiToken =
-    this.configService.get<string>('AMAZON_API_TOKEN');
+    this.configService.getOrThrow<string>('AMAZON_API_TOKEN');
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly httpService: HttpService,
-    private readonly openSearchService: SearchService,
+    private readonly searchService: SearchService,
     private readonly redisService: RedisService,
+    private readonly brightDataService: BrightDataService,
   ) {}
 
   /**
@@ -24,57 +24,46 @@ export class AmazonService {
    * @param domain Amazon domain (e.g., https://www.amazon.com)
    * @param pagesToSearch Number of pages to search
    */
+
   async fetchProducts(
     keywords: string,
     domain: string,
     pagesToSearch: number,
-  ): Promise<any> {
-    const cacheKey = `products:${keywords}:${domain}`;
-    const cachedData = await this.redisService.getJSON<any[]>(cacheKey);
+  ): Promise<any[]> {
+    const snapshotId = await this.brightDataService.triggerDataCollection([
+      { keywords, domain, pages_to_search: pagesToSearch },
+    ]);
 
-    if (cachedData) {
-      console.log('Returning cached data from Redis');
-      return cachedData;
+    const products = await this.brightDataService.fetchData(snapshotId);
+
+    return products;
+  }
+
+  /**
+   * Get cached products from Redis.
+   */
+  async getCachedProducts(keywords: string): Promise<any[]> {
+    const cacheKey = `products:${keywords}`;
+    return this.redisService.getJSON<any[]>(cacheKey);
+  }
+
+  /**
+   * Cache products in Redis.
+   */
+  async cacheProducts(keywords: string, products: any[]): Promise<void> {
+    const cacheKey = `products:${keywords}`;
+    await this.redisService.setJSON(cacheKey, products, 3600); // Cache for 1 hour
+  }
+
+  /**
+   * Get a specific product by title from the cached products.
+   */
+  async getCachedProduct(title: string): Promise<any | null> {
+    const products = await this.getCachedProducts(title);
+    if (!products) {
+      return null;
     }
 
-    const payload = [
-      {
-        keywords,
-        domain,
-        pages_to_search: pagesToSearch,
-      },
-    ];
-
-    try {
-      const response = await firstValueFrom(
-        this.httpService.post(`${this.apiUrl}/trigger`, payload, {
-          headers: {
-            Authorization: `Bearer ${this.apiToken}`,
-            'Content-Type': 'application/json',
-          },
-        }),
-      );
-
-      const products = response.data; // Assuming the API response contains a `data` array of products
-
-      // Cache the fetched data in Redis for 1 hour
-      await this.redisService.setJSON(cacheKey, products, 3600);
-
-      // Index the important fields in OpenSearch
-      for (const product of products) {
-        await this.openSearchService.indexProduct({
-          title: product.title,
-          price: product.final_price,
-          categories: product.categories,
-          image_url: product.image_url,
-          url: product.url,
-        });
-      }
-
-      return products;
-    } catch (error) {
-      console.error('Error fetching products from Amazon API:', error.message);
-      throw error;
-    }
+    return products.find((product) => product.title === title) || null;
   }
 }
